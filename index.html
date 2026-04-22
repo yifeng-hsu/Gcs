@@ -93,7 +93,7 @@
     loadVoices();
 
     const scenarios = [
-        { text: "自發張眼，對答正確，可配合指令。", e: 4, v: 5, m: 6 },
+        { text: "自動張眼，對答正確，可配合指令。", e: 4, v: 5, m: 6 },
         { text: "拍肩後張眼，說話正確，可配合指令。", e: 3, v: 5, m: 6 },
         { text: "自發張眼，對話混亂，可配合指令。", e: 4, v: 4, m: 6 },
         { text: "拍肩後張眼，對話混亂，可配合指令。", e: 3, v: 4, m: 6 },
@@ -177,10 +177,10 @@
         const msg = new SpeechSynthesisUtterance(text);
         
         // 強制搜尋 zh-TW 且優先匹配你選定的系統語音
-        const targetVoice = voices.find(v => v.lang.includes('zh-TW') || v.lang.includes('zh-HK'));
+        const targetVoice = voices.find(v => v.lang.includes('zh-Hant-TW') || v.lang.includes('zh-TW'));
         if (targetVoice) msg.voice = targetVoice;
         
-        msg.lang = 'zh-TW';
+        msg.lang = 'zh-Hant-TW';
         msg.rate = 1.0;
         window.speechSynthesis.speak(msg);
     }
