@@ -97,9 +97,8 @@
     // 抓取並過濾中文語音，放入下拉選單
     function loadVoices() {
         voices = window.speechSynthesis.getVoices();
-        voiceSelect.innerHTML = ''; // 清空原本的選項
+        voiceSelect.innerHTML = ''; 
         
-        // 只抓取名稱或語系裡有中文的聲音 (包含台灣、中國、香港的男女聲)
         const chineseVoices = voices.filter(v => v.lang.includes('zh') || v.name.includes('Chinese'));
         
         if (chineseVoices.length === 0) {
@@ -109,8 +108,7 @@
 
         chineseVoices.forEach((voice, index) => {
             const option = document.createElement('option');
-            option.value = index; // 記錄它在 chineseVoices 裡的索引
-            // 標示聲音名稱
+            option.value = index; 
             option.textContent = `${voice.name} (${voice.lang})`;
             voiceSelect.appendChild(option);
         });
@@ -122,61 +120,60 @@
         }
     }
 
-    // 監聽語音清單變更 (iOS 必備)
     window.speechSynthesis.onvoiceschanged = loadVoices;
 
-    // 50 題精簡題庫
+    // 50 題精簡題庫 (M5 已全部替換為 "對痛可以定位")
     const scenarios = [
         { text: "自發張眼，對答正確，可配合指令。", e: 4, v: 5, m: 6 },
         { text: "拍肩後張眼，說話正確，可配合指令。", e: 3, v: 5, m: 6 },
         { text: "自發張眼，對話混亂，可配合指令。", e: 4, v: 4, m: 6 },
         { text: "拍肩後張眼，對話混亂，可配合指令。", e: 3, v: 4, m: 6 },
-        { text: "自發張眼，對話正確，但無法配合指令，痛刺激可定位。", e: 4, v: 5, m: 5 },
+        { text: "自發張眼，對話正確，無法配合指令，對痛可以定位。", e: 4, v: 5, m: 5 },
         { text: "自發張眼，會說單字，可配合指令。", e: 4, v: 3, m: 6 },
-        { text: "拍肩後張眼，會聲吟，手呈現定位動作。", e: 3, v: 2, m: 5 },
-        { text: "痛刺激後張眼，對話混亂，手呈現定位動作。", e: 2, v: 4, m: 5 },
+        { text: "拍肩後張眼，會聲吟，對痛可以定位。", e: 3, v: 2, m: 5 },
+        { text: "痛刺激後張眼，對話混亂，對痛可以定位。", e: 2, v: 4, m: 5 },
         { text: "自發張眼，不發聲，手呈現縮回動作。", e: 4, v: 1, m: 4 },
         { text: "拍肩後張眼，會說單字，手呈現縮回動作。", e: 3, v: 3, m: 4 },
         { text: "痛刺激後張眼，會聲吟，手呈現縮回動作。", e: 2, v: 2, m: 4 },
         { text: "拍肩後張眼，對答正確，手部無反應。", e: 3, v: 5, m: 1 },
         { text: "自發張眼，會聲吟，手呈現病態屈曲。", e: 4, v: 2, m: 3 },
-        { text: "痛刺激後張眼，不發聲，手呈現定位動作。", e: 2, v: 1, m: 5 },
+        { text: "痛刺激後張眼，不發聲，對痛可以定位。", e: 2, v: 1, m: 5 },
         { text: "痛刺激後張眼，會說單字，手呈現病態伸展。", e: 2, v: 3, m: 2 },
         { text: "不張眼，會聲吟，手呈現病態屈曲。", e: 1, v: 2, m: 3 },
         { text: "拍肩後張眼，不發聲，手呈現病態伸展。", e: 3, v: 1, m: 2 },
         { text: "痛刺激後張眼，不發聲，手呈現病態屈曲。", e: 2, v: 1, m: 3 },
         { text: "自發張眼，不發聲，手呈現病態伸展。", e: 4, v: 1, m: 2 },
-        { text: "不張眼，會說單字，手呈現定位動作。", e: 1, v: 3, m: 5 },
+        { text: "不張眼，會說單字，對痛可以定位。", e: 1, v: 3, m: 5 },
         { text: "不張眼，會聲吟，手呈現縮回動作。", e: 1, v: 2, m: 4 },
         { text: "痛刺激後張眼，會聲吟，手部無反應。", e: 2, v: 2, m: 1 },
         { text: "不張眼，會說單字，手呈現病態屈曲。", e: 1, v: 3, m: 3 },
         { text: "拍肩後張眼，會聲吟，手部無反應。", e: 3, v: 2, m: 1 },
         { text: "自發張眼，會說單字，手呈現病態屈曲。", e: 4, v: 3, m: 3 },
         { text: "痛刺激後張眼，會聲吟，手呈現縮回動作。", e: 2, v: 2, m: 4 },
-        { text: "不張眼，對話混亂，手呈現定位動作。", e: 1, v: 4, m: 5 },
+        { text: "不張眼，對話混亂，對痛可以定位。", e: 1, v: 4, m: 5 },
         { text: "拍肩後張眼，會說單字，手呈現病態伸展。", e: 3, v: 3, m: 2 },
-        { text: "自發張眼，不發聲，手呈現定位動作。", e: 4, v: 1, m: 5 },
+        { text: "自發張眼，不發聲，對痛可以定位。", e: 4, v: 1, m: 5 },
         { text: "不張眼，會聲吟，手呈現病態伸展。", e: 1, v: 2, m: 2 },
-        { text: "痛刺激後張眼，會說單字，手呈現定位動作。", e: 2, v: 3, m: 5 },
+        { text: "痛刺激後張眼，會說單字，對痛可以定位。", e: 2, v: 3, m: 5 },
         { text: "拍肩後張眼，不發聲，手呈現縮回動作。", e: 3, v: 1, m: 4 },
         { text: "自發張眼，會聲吟，手部無反應。", e: 4, v: 2, m: 1 },
         { text: "不張眼，會說單字，手呈縮回動作。", e: 1, v: 3, m: 4 },
         { text: "痛刺激後張眼，不發聲，手呈病態伸展。", e: 2, v: 1, m: 2 },
         { text: "拍肩後張眼，對話混亂，手呈病態屈曲。", e: 3, v: 4, m: 3 },
-        { text: "自發張眼，會說單字，手呈定位動作。", e: 4, v: 3, m: 5 },
+        { text: "自發張眼，會說單字，對痛可以定位。", e: 4, v: 3, m: 5 },
         { text: "不張眼，對答正確，手呈縮回動作。", e: 1, v: 5, m: 4 },
-        { text: "痛刺激後張眼，會聲吟，手呈定位動作。", e: 2, v: 2, m: 5 },
-        { text: "拍肩後張眼，不發聲，手呈定位動作。", e: 3, v: 1, m: 5 },
+        { text: "痛刺激後張眼，會聲吟，對痛可以定位。", e: 2, v: 2, m: 5 },
+        { text: "拍肩後張眼，不發聲，對痛可以定位。", e: 3, v: 1, m: 5 },
         { text: "自發張眼，會說單字，手部無反應。", e: 4, v: 3, m: 1 },
         { text: "不張眼，會聲吟，手呈病態屈曲。", e: 1, v: 2, m: 3 },
         { text: "痛刺激後張眼，不發聲，手部無反應。", e: 2, v: 1, m: 1 },
         { text: "拍肩後張眼，對話混亂，手呈病態伸展。", e: 3, v: 4, m: 2 },
         { text: "自發張眼，對答正確，手部呈縮回。", e: 4, v: 5, m: 4 },
-        { text: "不張眼，不發聲，手部呈定位動作。", e: 1, v: 1, m: 5 },
+        { text: "不張眼，不發聲，對痛可以定位。", e: 1, v: 1, m: 5 },
         { text: "痛刺激後張眼，會說單字，手部呈病態屈曲。", e: 2, v: 3, m: 3 },
         { text: "拍肩後張眼，對話正確，手部呈病態屈曲。", e: 3, v: 5, m: 3 },
-        { text: "自發張眼，不發聲，手呈現定位。", e: 4, v: 1, m: 5 },
-        { text: "不張眼，對話正確，手呈現定位。", e: 1, v: 5, m: 5 }
+        { text: "自發張眼，不發聲，對痛可以定位。", e: 4, v: 1, m: 5 },
+        { text: "不張眼，對話正確，對痛可以定位。", e: 1, v: 5, m: 5 }
     ];
 
     function toggleText() {
@@ -203,7 +200,6 @@
         document.getElementById('ansVal').innerText = (q.e + q.v + q.m);
         textVisible = true; toggleText(); 
         
-        // 確保剛載入時嘗試抓取語音清單
         if(voices.length === 0) loadVoices();
         
         speakScenario();
@@ -214,7 +210,6 @@
         const text = document.getElementById('scenarioText').innerText;
         const msg = new SpeechSynthesisUtterance(text);
         
-        // 從下拉選單取得使用者選擇的聲音
         const chineseVoices = voices.filter(v => v.lang.includes('zh') || v.name.includes('Chinese'));
         const selectedIndex = voiceSelect.value;
         
@@ -244,7 +239,6 @@
         }
     }
     
-    // 初始化時先調用一次
     loadVoices();
     window.onload = nextQuestion;
 </script>
