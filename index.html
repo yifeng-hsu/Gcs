@@ -3,16 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GCS 精準訓練器 - EMT-P 17th</title>
+    <title>GCS 精簡訓練器 - EMT-P 17th</title>
     <style>
         body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background: #1a1a1a; color: #e0e0e0; display: flex; justify-content: center; padding: 20px; margin: 0; }
         .card { background: #262626; width: 100%; max-width: 480px; border-radius: 15px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); border: 1px solid #3d3d3d; text-align: center; }
         .header { margin-bottom: 20px; text-align: left; border-left: 4px solid #e74c3c; padding-left: 15px; }
-        .scenario-box { background: #121212; border-radius: 8px; padding: 20px; min-height: 110px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; border: 1px inset #333; }
+        .scenario-box { background: #121212; border-radius: 8px; padding: 20px; min-height: 110px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; border: 1px inset #333; }
         #scenarioText { font-size: 1.15rem; display: none; line-height: 1.7; color: #ffffff; font-weight: 500; }
         #placeholderText { font-size: 1.1rem; color: #555; font-style: italic; }
+        
+        /* 語音選擇器樣式 */
+        .voice-selector { width: 100%; padding: 8px; margin-bottom: 15px; background: #333; color: #fff; border: 1px solid #555; border-radius: 5px; font-size: 0.9rem; }
+        
         .btn-action { background: #333; color: #fff; border: 1px solid #444; padding: 12px 18px; border-radius: 6px; cursor: pointer; margin: 5px; font-size: 0.9rem; transition: 0.2s; }
-        .label { font-weight: bold; width: 100%; margin: 20px 0 8px 0; color: #e74c3c; text-align: left; font-size: 0.85rem; letter-spacing: 1px; }
+        .label { font-weight: bold; width: 100%; margin: 15px 0 8px 0; color: #e74c3c; text-align: left; font-size: 0.85rem; letter-spacing: 1px; }
         .btn-group { display: flex; justify-content: space-between; gap: 6px; margin-bottom: 12px; }
         button.num-btn { flex: 1; height: 50px; border-radius: 6px; border: none; background: #444; color: #fff; font-size: 1.2rem; font-weight: 600; cursor: pointer; transition: 0.1s; }
         button.correct { background: #27ae60 !important; color: #fff; }
@@ -29,6 +33,10 @@
         <div style="font-size: 1.2rem; font-weight: bold; color: #fff;">GCS 直覺聽力反應測試</div>
         <div style="font-size: 0.8rem; color: #888;">精簡指令版 (4-15分)</div>
     </div>
+
+    <select id="voiceSelect" class="voice-selector">
+        <option value="">正在載入系統語音...</option>
+    </select>
 
     <div class="scenario-box">
         <div id="scenarioText">準備中...</div>
@@ -74,7 +82,7 @@
     
     <div class="score-info">
         <span>正確解答次數: <span id="count" style="color: #27ae60;">0</span></span>
-        <span>iOS 語音優化版</span>
+        <span>iOS 語音手動選擇版</span>
     </div>
 </div>
 
@@ -84,16 +92,42 @@
     let totalPracticed = 0;
     let textVisible = false;
     let voices = [];
+    const voiceSelect = document.getElementById('voiceSelect');
 
-    // 預加載語音清單 (解決 iOS 切換延遲)
+    // 抓取並過濾中文語音，放入下拉選單
     function loadVoices() {
         voices = window.speechSynthesis.getVoices();
-    }
-    window.speechSynthesis.onvoiceschanged = loadVoices;
-    loadVoices();
+        voiceSelect.innerHTML = ''; // 清空原本的選項
+        
+        // 只抓取名稱或語系裡有中文的聲音 (包含台灣、中國、香港的男女聲)
+        const chineseVoices = voices.filter(v => v.lang.includes('zh') || v.name.includes('Chinese'));
+        
+        if (chineseVoices.length === 0) {
+            voiceSelect.innerHTML = '<option value="">請點擊任意處或發聲以喚醒語音引擎</option>';
+            return;
+        }
 
+        chineseVoices.forEach((voice, index) => {
+            const option = document.createElement('option');
+            option.value = index; // 記錄它在 chineseVoices 裡的索引
+            // 標示聲音名稱
+            option.textContent = `${voice.name} (${voice.lang})`;
+            voiceSelect.appendChild(option);
+        });
+
+        // 預設尋找男聲 (嘉猷 Chia-Chi)
+        const defaultMaleIndex = chineseVoices.findIndex(v => v.name.includes('Chia-Chi') || v.name.includes('嘉猷'));
+        if (defaultMaleIndex !== -1) {
+            voiceSelect.selectedIndex = defaultMaleIndex;
+        }
+    }
+
+    // 監聽語音清單變更 (iOS 必備)
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+
+    // 50 題精簡題庫
     const scenarios = [
-        { text: "自動張眼，對答正確，可配合指令。", e: 4, v: 5, m: 6 },
+        { text: "自發張眼，對答正確，可配合指令。", e: 4, v: 5, m: 6 },
         { text: "拍肩後張眼，說話正確，可配合指令。", e: 3, v: 5, m: 6 },
         { text: "自發張眼，對話混亂，可配合指令。", e: 4, v: 4, m: 6 },
         { text: "拍肩後張眼，對話混亂，可配合指令。", e: 3, v: 4, m: 6 },
@@ -168,6 +202,10 @@
         document.getElementById('scenarioText').innerText = q.text;
         document.getElementById('ansVal').innerText = (q.e + q.v + q.m);
         textVisible = true; toggleText(); 
+        
+        // 確保剛載入時嘗試抓取語音清單
+        if(voices.length === 0) loadVoices();
+        
         speakScenario();
     }
 
@@ -176,11 +214,14 @@
         const text = document.getElementById('scenarioText').innerText;
         const msg = new SpeechSynthesisUtterance(text);
         
-        // 強制搜尋 zh-TW 且優先匹配你選定的系統語音
-        const targetVoice = voices.find(v => v.lang.includes('zh-Hant-TW') || v.lang.includes('zh-TW'));
-        if (targetVoice) msg.voice = targetVoice;
+        // 從下拉選單取得使用者選擇的聲音
+        const chineseVoices = voices.filter(v => v.lang.includes('zh') || v.name.includes('Chinese'));
+        const selectedIndex = voiceSelect.value;
         
-        msg.lang = 'zh-Hant-TW';
+        if (selectedIndex !== "" && chineseVoices[selectedIndex]) {
+            msg.voice = chineseVoices[selectedIndex];
+        }
+        
         msg.rate = 1.0;
         window.speechSynthesis.speak(msg);
     }
@@ -202,6 +243,9 @@
             setTimeout(nextQuestion, 1800);
         }
     }
+    
+    // 初始化時先調用一次
+    loadVoices();
     window.onload = nextQuestion;
 </script>
 </body>
