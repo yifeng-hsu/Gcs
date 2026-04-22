@@ -3,29 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GCS 精簡訓練器 - EMT-P 17th</title>
+    <title>GCS 精準訓練器 - EMT-P 17th</title>
     <style>
         body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background: #1a1a1a; color: #e0e0e0; display: flex; justify-content: center; padding: 20px; margin: 0; }
         .card { background: #262626; width: 100%; max-width: 480px; border-radius: 15px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); border: 1px solid #3d3d3d; text-align: center; }
         .header { margin-bottom: 20px; text-align: left; border-left: 4px solid #e74c3c; padding-left: 15px; }
-        
         .scenario-box { background: #121212; border-radius: 8px; padding: 20px; min-height: 110px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; border: 1px inset #333; }
         #scenarioText { font-size: 1.15rem; display: none; line-height: 1.7; color: #ffffff; font-weight: 500; }
         #placeholderText { font-size: 1.1rem; color: #555; font-style: italic; }
-        
         .btn-action { background: #333; color: #fff; border: 1px solid #444; padding: 12px 18px; border-radius: 6px; cursor: pointer; margin: 5px; font-size: 0.9rem; transition: 0.2s; }
-        .btn-action:hover { background: #444; }
-        
         .label { font-weight: bold; width: 100%; margin: 20px 0 8px 0; color: #e74c3c; text-align: left; font-size: 0.85rem; letter-spacing: 1px; }
         .btn-group { display: flex; justify-content: space-between; gap: 6px; margin-bottom: 12px; }
-        
         button.num-btn { flex: 1; height: 50px; border-radius: 6px; border: none; background: #444; color: #fff; font-size: 1.2rem; font-weight: 600; cursor: pointer; transition: 0.1s; }
-        button.num-btn:active { transform: translateY(2px); }
         button.correct { background: #27ae60 !important; color: #fff; }
         button.wrong { background: #c0392b !important; color: #fff; }
-        
         .next-btn { background: #c0392b; color: white; width: 100%; height: 55px; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1rem; margin-top: 25px; font-weight: bold; }
-        .next-btn:hover { background: #a93226; }
         .score-info { font-size: 0.85rem; color: #888; margin-top: 15px; display: flex; justify-content: space-between; }
         #totalScoreDisplay { font-size: 0.8rem; color: #f1c40f; margin-top: 5px; display: none; }
     </style>
@@ -82,7 +74,7 @@
     
     <div class="score-info">
         <span>正確解答次數: <span id="count" style="color: #27ae60;">0</span></span>
-        <span>EMT-P 17th 精簡題庫</span>
+        <span>iOS 語音優化版</span>
     </div>
 </div>
 
@@ -91,20 +83,22 @@
     let userAnswer = { e: 0, v: 0, m: 0 };
     let totalPracticed = 0;
     let textVisible = false;
+    let voices = [];
 
-    // 50 題精簡指令題庫 (已排除 3 分與眼傷情境)
+    // 預加載語音清單 (解決 iOS 切換延遲)
+    function loadVoices() {
+        voices = window.speechSynthesis.getVoices();
+    }
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+    loadVoices();
+
     const scenarios = [
-        // 15分系列
         { text: "自發張眼，對答正確，可配合指令。", e: 4, v: 5, m: 6 },
-        { text: "呼喚無反應，拍肩後張眼，說話正確，可配合指令。", e: 3, v: 5, m: 6 },
-        
-        // 輕度混亂
+        { text: "拍肩後張眼，說話正確，可配合指令。", e: 3, v: 5, m: 6 },
         { text: "自發張眼，對話混亂，可配合指令。", e: 4, v: 4, m: 6 },
         { text: "拍肩後張眼，對話混亂，可配合指令。", e: 3, v: 4, m: 6 },
         { text: "自發張眼，對話正確，但無法配合指令，痛刺激可定位。", e: 4, v: 5, m: 5 },
         { text: "自發張眼，會說單字，可配合指令。", e: 4, v: 3, m: 6 },
-        
-        // 中度障礙
         { text: "拍肩後張眼，會聲吟，手呈現定位動作。", e: 3, v: 2, m: 5 },
         { text: "痛刺激後張眼，對話混亂，手呈現定位動作。", e: 2, v: 4, m: 5 },
         { text: "自發張眼，不發聲，手呈現縮回動作。", e: 4, v: 1, m: 4 },
@@ -113,8 +107,6 @@
         { text: "拍肩後張眼，對答正確，手部無反應。", e: 3, v: 5, m: 1 },
         { text: "自發張眼，會聲吟，手呈現病態屈曲。", e: 4, v: 2, m: 3 },
         { text: "痛刺激後張眼，不發聲，手呈現定位動作。", e: 2, v: 1, m: 5 },
-        
-        // 重度障礙 (GCS 8以下)
         { text: "痛刺激後張眼，會說單字，手呈現病態伸展。", e: 2, v: 3, m: 2 },
         { text: "不張眼，會聲吟，手呈現病態屈曲。", e: 1, v: 2, m: 3 },
         { text: "拍肩後張眼，不發聲，手呈現病態伸展。", e: 3, v: 1, m: 2 },
@@ -125,8 +117,6 @@
         { text: "痛刺激後張眼，會聲吟，手部無反應。", e: 2, v: 2, m: 1 },
         { text: "不張眼，會說單字，手呈現病態屈曲。", e: 1, v: 3, m: 3 },
         { text: "拍肩後張眼，會聲吟，手部無反應。", e: 3, v: 2, m: 1 },
-        
-        // 更多精簡組合
         { text: "自發張眼，會說單字，手呈現病態屈曲。", e: 4, v: 3, m: 3 },
         { text: "痛刺激後張眼，會聲吟，手呈現縮回動作。", e: 2, v: 2, m: 4 },
         { text: "不張眼，對話混亂，手呈現定位動作。", e: 1, v: 4, m: 5 },
@@ -159,15 +149,12 @@
         textVisible = !textVisible;
         const textEl = document.getElementById('scenarioText');
         const placeholderEl = document.getElementById('placeholderText');
-        const btn = document.getElementById('toggleBtn');
         if (textVisible) {
             textEl.style.display = 'block';
             placeholderEl.style.display = 'none';
-            btn.innerText = '🙈 隱藏文字';
         } else {
             textEl.style.display = 'none';
             placeholderEl.style.display = 'block';
-            btn.innerText = '👁️ 顯示文字';
         }
     }
 
@@ -175,14 +162,11 @@
         userAnswer = { e: 0, v: 0, m: 0 };
         document.querySelectorAll('.num-btn').forEach(b => b.className = 'num-btn');
         document.getElementById('totalScoreDisplay').style.display = 'none';
-        
         const rand = Math.floor(Math.random() * scenarios.length);
         const q = scenarios[rand];
         currentAnswer = { e: q.e, v: q.v, m: q.m };
-        
         document.getElementById('scenarioText').innerText = q.text;
         document.getElementById('ansVal').innerText = (q.e + q.v + q.m);
-        
         textVisible = true; toggleText(); 
         speakScenario();
     }
@@ -191,6 +175,11 @@
         window.speechSynthesis.cancel();
         const text = document.getElementById('scenarioText').innerText;
         const msg = new SpeechSynthesisUtterance(text);
+        
+        // 強制搜尋 zh-TW 且優先匹配你選定的系統語音
+        const targetVoice = voices.find(v => v.lang.includes('zh-TW') || v.lang.includes('zh-HK'));
+        if (targetVoice) msg.voice = targetVoice;
+        
         msg.lang = 'zh-TW';
         msg.rate = 1.0;
         window.speechSynthesis.speak(msg);
@@ -199,14 +188,12 @@
     function check(btn, type, val) {
         const group = document.getElementById(`${type}-group`);
         group.querySelectorAll('.num-btn').forEach(b => b.className = 'num-btn');
-        
         if (val === currentAnswer[type]) {
             btn.classList.add('correct');
             userAnswer[type] = val;
         } else {
             btn.classList.add('wrong');
         }
-
         if (userAnswer.e === currentAnswer.e && userAnswer.v === currentAnswer.v && userAnswer.m === currentAnswer.m) {
             totalPracticed++;
             document.getElementById('count').innerText = totalPracticed;
@@ -215,9 +202,7 @@
             setTimeout(nextQuestion, 1800);
         }
     }
-
     window.onload = nextQuestion;
 </script>
-
 </body>
 </html>
