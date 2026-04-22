@@ -3,82 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EMT-P GCS 直覺訓練器</title>
+    <title>EMT-P GCS 聽力訓練器</title>
     <style>
-        body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 20px; }
-        .card { background: white; width: 100%; max-width: 500px; border-radius: 15px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; }
-        .scenario { font-size: 1.2rem; min-height: 80px; margin-bottom: 20px; color: #333; line-height: 1.6; }
-        .btn-group { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        .label { font-weight: bold; width: 100%; margin-bottom: 10px; color: #555; }
-        button { width: 50px; height: 50px; border-radius: 10px; border: 2px solid #ddd; background: white; font-size: 1.1rem; cursor: pointer; transition: 0.2s; }
-        button.active { background: #007bff; color: white; border-color: #0056b3; }
-        button.correct { background: #28a745 !important; color: white; }
-        button.wrong { background: #dc3545 !important; color: white; }
-        .controls { margin-top: 30px; border-top: 1px solid #eee; pt: 20px; }
-        .next-btn { background: #333; color: white; width: 120px; height: 40px; border: none; cursor: pointer; }
-        .score { font-size: 0.9rem; color: #888; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #2c3e50; color: white; display: flex; justify-content: center; padding: 20px; }
+        .card { background: #34495e; width: 100%; max-width: 500px; border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
+        .header { margin-bottom: 20px; border-bottom: 1px solid #5d6d7e; padding-bottom: 10px; }
+        
+        /* 文字隱藏邏輯 */
+        .scenario-box { background: #1a252f; border-radius: 10px; padding: 20px; min-height: 80px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; }
+        #scenarioText { font-size: 1.2rem; display: none; line-height: 1.6; color: #ecf0f1; }
+        
+        .btn-action { background: #e67e22; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 5px; font-weight: bold; }
+        .btn-action:hover { background: #d35400; }
+        
+        .label { font-weight: bold; width: 100%; margin: 15px 0 10px 0; color: #bdc3c7; text-align: left; font-size: 0.9rem; }
+        .btn-group { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+        
+        /* 數字按鈕 */
+        button.num-btn { flex: 1; height: 55px; border-radius: 8px; border: 1px solid #7f8c8d; background: #ecf0f1; color: #2c3e50; font-size: 1.3rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        button.correct { background: #27ae60 !important; color: white; border-color: #2ecc71; transform: scale(1.05); }
+        button.wrong { background: #e74c3c !important; color: white; border-color: #c0392b; }
+        
+        .next-btn { background: #2980b9; color: white; width: 100%; height: 50px; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1rem; margin-top: 20px; font-weight: bold; }
+        .score { font-size: 0.8rem; color: #95a5a6; margin-top: 5px; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>GCS 模擬訓練 (NTPC 17th)</h2>
-    <div class="score">已練習: <span id="count">0</span></div>
-    <hr>
-    <div class="scenario" id="scenarioText">點擊下方按鈕開始練習...</div>
-    <button onclick="speakScenario()" style="width: auto; height: auto; padding: 5px 15px; font-size: 0.8rem;">再聽一次 🔊</button>
+    <div class="header">
+        <div style="font-size: 1.5rem; font-weight: bold;">GCS 直覺聽力訓練</div>
+        <div class="score">TP 訓練模式：第 17 期專用</div>
+    </div>
+
+    <div class="scenario-box">
+        <div id="scenarioText">題目載入中...</div>
+        <div id="placeholderText" style="color: #7f8c8d;">題目已隱藏，請聽語音</div>
+    </div>
+
+    <div>
+        <button class="btn-action" onclick="speakScenario()">🔊 重聽語音</button>
+        <button class="btn-action" id="toggleBtn" onclick="toggleText()" style="background: #7f8c8d;">👁️ 顯示文字</button>
+    </div>
 
     <div class="controls">
-        <div class="label">Eye Opening (E)</div>
+        <div class="label">EYE (E)</div>
         <div class="btn-group" id="e-group">
-            <button onclick="check(this, 'e', 1)">1</button>
-            <button onclick="check(this, 'e', 2)">2</button>
-            <button onclick="check(this, 'e', 3)">3</button>
-            <button onclick="check(this, 'e', 4)">4</button>
+            <button class="num-btn" onclick="check(this, 'e', 1)">1</button>
+            <button class="num-btn" onclick="check(this, 'e', 2)">2</button>
+            <button class="num-btn" onclick="check(this, 'e', 3)">3</button>
+            <button class="num-btn" onclick="check(this, 'e', 4)">4</button>
         </div>
 
-        <div class="label">Verbal Response (V)</div>
+        <div class="label">VERBAL (V)</div>
         <div class="btn-group" id="v-group">
-            <button onclick="check(this, 'v', 1)">1</button>
-            <button onclick="check(this, 'v', 2)">2</button>
-            <button onclick="check(this, 'v', 3)">3</button>
-            <button onclick="check(this, 'v', 4)">4</button>
-            <button onclick="check(this, 'v', 5)">5</button>
+            <button class="num-btn" onclick="check(this, 'v', 1)">1</button>
+            <button class="num-btn" onclick="check(this, 'v', 2)">2</button>
+            <button class="num-btn" onclick="check(this, 'v', 3)">3</button>
+            <button class="num-btn" onclick="check(this, 'v', 4)">4</button>
+            <button class="num-btn" onclick="check(this, 'v', 5)">5</button>
         </div>
 
-        <div class="label">Motor Response (M)</div>
+        <div class="label">MOTOR (M)</div>
         <div class="btn-group" id="m-group">
-            <button onclick="check(this, 'm', 1)">1</button>
-            <button onclick="check(this, 'm', 2)">2</button>
-            <button onclick="check(this, 'm', 3)">3</button>
-            <button onclick="check(this, 'm', 4)">4</button>
-            <button onclick="check(this, 'm', 5)">5</button>
-            <button onclick="check(this, 'm', 6)">6</button>
+            <button class="num-btn" onclick="check(this, 'm', 1)">1</button>
+            <button class="num-btn" onclick="check(this, 'm', 2)">2</button>
+            <button class="num-btn" onclick="check(this, 'm', 3)">3</button>
+            <button class="num-btn" onclick="check(this, 'm', 4)">4</button>
+            <button class="num-btn" onclick="check(this, 'm', 5)">5</button>
+            <button class="num-btn" onclick="check(this, 'm', 6)">6</button>
         </div>
     </div>
     
-    <button class="next-btn" onclick="nextQuestion()">下一題</button>
+    <button class="next-btn" onclick="nextQuestion()">下一題 (Next Case)</button>
+    <div class="score" style="margin-top: 15px;">已成功完成: <span id="count">0</span> 題</div>
 </div>
 
 <script>
     let currentAnswer = { e: 0, v: 0, m: 0 };
     let userAnswer = { e: 0, v: 0, m: 0 };
     let totalPracticed = 0;
+    let textVisible = false;
 
+    // 擴充更豐富的題庫邏輯
     const scenarios = [
-        { text: "患者可以配合所有動作，對答如流，自發睜眼。", e: 4, v: 5, m: 6 },
-        { text: "呼喚才張眼，說話混亂不知所云，痛刺激時手可以撥開你的手。", e: 3, v: 4, m: 5 },
-        { text: "痛刺激才張眼，只能發出呻吟聲，痛刺激時身體呈異常伸展。", e: 2, v: 2, m: 2 },
-        { text: "完全不張眼，沒聲音，痛刺激時手會縮回躲避。", e: 1, v: 1, m: 4 },
-        { text: "自發張眼，只能說出單個單字，要求握手時無法配合但痛刺激能定位位置。", e: 4, v: 3, m: 5 },
-        { text: "呼喚才張眼，對話清楚，要求握手時完全沒反應。", e: 3, v: 5, m: 1 },
-        { text: "痛刺激不張眼，發出聽不懂的怪聲，痛刺激時兩手異常屈曲。", e: 1, v: 2, m: 3 }
+        { text: "先生沒反應，痛刺激才張眼，大聲罵出單字髒話，手可以撥掉你的手。", e: 2, v: 3, m: 5 },
+        { text: "患者對大聲呼喚有反應並張眼，問他名字他說他在火星，要求握手時可以配合。", e: 3, v: 4, m: 6 },
+        { text: "患者維持睜眼狀態，但你問什麼他都不說話，痛刺激時手部呈異常屈曲。", e: 4, v: 1, m: 3 },
+        { text: "患者完全沒反應。痛刺激不張眼，僅發出呻吟聲，兩手向外僵硬伸展。", e: 1, v: 2, m: 2 },
+        { text: "患者自發睜眼，對答如流，但你要他握手時他完全不動，痛刺激也沒反應。", e: 4, v: 5, m: 1 },
+        { text: "呼喚才張眼，講話聽不懂在說什麼，痛刺激時會迅速把手抽走躲避。", e: 3, v: 2, m: 4 },
+        { text: "考官說：患者可以配合所有動作，對答如流，自發睜眼。", e: 4, v: 5, m: 6 },
+        { text: "患者眼睛被繃帶包紮。呼喚沒反應，痛刺激有呻吟聲，手能定位痛點。請評估後續分數。", e: 1, v: 2, m: 5 },
+        { text: "OHCA現場。患者完全無張眼、無聲音、無動作。", e: 1, v: 1, m: 1 }
     ];
 
+    function toggleText() {
+        textVisible = !textVisible;
+        const textEl = document.getElementById('scenarioText');
+        const placeholderEl = document.getElementById('placeholderText');
+        const btn = document.getElementById('toggleBtn');
+        
+        if (textVisible) {
+            textEl.style.display = 'block';
+            placeholderEl.style.display = 'none';
+            btn.innerText = '🙈 隱藏文字';
+        } else {
+            textEl.style.display = 'none';
+            placeholderEl.style.display = 'block';
+            btn.innerText = '👁️ 顯示文字';
+        }
+    }
+
     function nextQuestion() {
-        // 重置狀態
         userAnswer = { e: 0, v: 0, m: 0 };
-        document.querySelectorAll('button').forEach(b => b.className = '');
+        document.querySelectorAll('.num-btn').forEach(b => b.className = 'num-btn');
         
         // 隨機選題
         const rand = Math.floor(Math.random() * scenarios.length);
@@ -86,38 +125,43 @@
         currentAnswer = { e: q.e, v: q.v, m: q.m };
         
         document.getElementById('scenarioText').innerText = q.text;
+        
+        // 重置文字顯示狀態為隱藏
+        textVisible = true; toggleText(); 
+        
         speakScenario();
     }
 
     function speakScenario() {
+        window.speechSynthesis.cancel(); // 先停止之前的語音
         const text = document.getElementById('scenarioText').innerText;
         const msg = new SpeechSynthesisUtterance(text);
         msg.lang = 'zh-TW';
-        msg.rate = 0.9;
+        msg.rate = 1.0;
         window.speechSynthesis.speak(msg);
     }
 
     function check(btn, type, val) {
-        // 清除該排選中狀態
         const group = document.getElementById(`${type}-group`);
-        group.querySelectorAll('button').forEach(b => b.className = '');
+        group.querySelectorAll('.num-btn').forEach(b => b.className = 'num-btn');
         
         if (val === currentAnswer[type]) {
-            btn.className = 'correct';
+            btn.classList.add('correct');
             userAnswer[type] = val;
         } else {
-            btn.className = 'wrong';
+            btn.classList.add('wrong');
         }
 
-        // 如果三項都對了，一秒後自動下一題
+        // 判斷全對
         if (userAnswer.e === currentAnswer.e && userAnswer.v === currentAnswer.v && userAnswer.m === currentAnswer.m) {
             totalPracticed++;
             document.getElementById('count').innerText = totalPracticed;
-            setTimeout(nextQuestion, 1200);
+            // 答對時自動顯示文字給回饋
+            if (!textVisible) toggleText();
+            setTimeout(nextQuestion, 1500);
         }
     }
 
-    // 初始化第一題
     window.onload = nextQuestion;
 </script>
 
